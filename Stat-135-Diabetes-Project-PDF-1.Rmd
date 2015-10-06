@@ -1,0 +1,1811 @@
+---
+title: "Stat 135 Diabetes Project"
+author: "Ellen Li, Sean Huang, and Eric Lin"
+date: "Tuesday, May 05, 2015"
+output: pdf_document
+number_sections: true
+---
+
+# 2   Accessing Data, Visualization, and Summarization
+
+```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+# Diabetes Project
+library(ggplot2)
+library(dplyr)
+
+# load data
+diab = read.csv("diabetes.csv")
+diab = diab[1:359,]
+bmi = round(703*(diab$weight/diab$height**2),2)
+diab$BMI = bmi
+whr = round(diab$waist / diab$hip, 2)
+diab$WHR = whr
+head(diab)
+attach(diab)
+```
+
+1. **glyhb Visualization and Summary** 
+
+
+```{r, echo=FALSE, fig.cap="Histogram of glyhb", fig.height=2.5, fig.width=3.2, fig.show ='hold'}
+
+gg.glyhb <- ggplot(diab) + geom_histogram(aes(x = glyhb), binwidth = 0.8, col = "white") + ggtitle("Histogram of glyhb")
+
+gg.glyhb
+
+box.glyhb <- ggplot(diab, aes(factor(0), glyhb)) + geom_boxplot() + xlab("") + scale_x_discrete(breaks=NULL) + coord_flip() + ggtitle("glyhb Boxplot")
+
+
+box.glyhb
+
+
+```
+
+>```
+>The histogram shows that glyhb might follow a Gamma distribution. This is
+>confirmed by the boxplot, which tells us that even though the majority of the
+>patients' glyhb falls into the [4, 6] range, there are a lot of outliers.
+>```
+
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3}
+
+qq.glyhb <- ggplot(diab) + stat_qq(aes(sample = glyhb)) + ggtitle("glyhb Normal Q-Q plot")
+
+qq.glyhb
+
+```
+
+>```
+>The QQ-plot of the glyhb against the normal confirms that the glyhb is not 
+>normally distributed.
+>```
+
+\newpage
+
+2. **chol Visualization and Summary**
+
+
+```{r, echo=FALSE, fig.height=2.5,fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+gg.chol <- ggplot(diab) + geom_histogram(aes(x = chol), binwidth = 2.2, col = "white") + ggtitle("chol")
+box.cholgen <- ggplot(diab, aes(factor(0), chol)) + geom_boxplot() + xlab("") + scale_x_discrete(breaks=NULL) + coord_flip() + ggtitle("chol boxplot")
+qq.chol <- ggplot(diab) + stat_qq(aes(sample = chol)) + ggtitle("chol normal Q-Q plot")
+
+gg.chol
+box.cholgen
+```
+
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3, warning=FALSE, fig.show='hold'}
+qq.chol
+
+```
+
+>```
+>From these three plots, we can see that chol looks more normally distributed 
+>than glyhb. The histogram looks like a bell curve and the QQ plot against the 
+>normal is closer to a straight line at a 45 degree angle.
+>```
+
+\newpage
+
+3. **Scatterplots of bp.1s vs bp.1d & age vs height**
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3, warning=FALSE, fig.show='hold'}
+scatter.bp <- ggplot(diab, aes(bp.1s, bp.1d)) + geom_point() + ggtitle("Scatterplot bp.1s vs. bp.1d") + 
+  stat_smooth(method="lm", se=FALSE)
+scatter.agehei <- ggplot(diab, aes(age, height)) + geom_point() + 
+  ggtitle("Scatterplot age vs. height") + stat_smooth(method="lm", se=FALSE)
+
+scatter.bp
+scatter.agehei
+```
+
+>```
+>The first plot shows that bp.1s and bp.1d are dependent on each other. When bp.1s 
+>increases, bp.1d increases too. The line in the plot is a linear model. The second 
+>plot shows that age and height are independent. The linear model is horizontal, 
+>which means an increase in age does not affect a person's height.
+>```
+
+4. **Comparing Boxplots of Different Features for Diabetic vs Nondiabetic**
+
+```{r, echo=FALSE, fig.height=2.3, fig.width=3.2, warning=FALSE, fig.show='hold'}
+ggplot(diab, aes(factor(glyhb>=7), chol)) + geom_boxplot() + xlab("") + ggtitle("chol (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), stab.glu)) + geom_boxplot() + xlab("") + ggtitle("stab.glu (glyhb>=7 or not)")
+box.hdl <- ggplot(diab, aes(factor(glyhb>=7), hdl)) + geom_boxplot() + xlab("") + ggtitle("hdl (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), ratio)) + geom_boxplot() + xlab("") + ggtitle("chol/hdl ratio (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), age)) + geom_boxplot() + xlab("") + ggtitle("age (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), height)) + geom_boxplot() + xlab("") + ggtitle("height (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), weight)) + geom_boxplot() + xlab("") + ggtitle("weight (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), bp.1s)) + geom_boxplot() + xlab("") + ggtitle("bp.1s (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), bp.1d)) + geom_boxplot() + xlab("") + ggtitle("bp.1d (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), waist)) + geom_boxplot() + xlab("") + ggtitle("waist (glyhb>=7 or not)")
+ggplot(diab, aes(factor(glyhb>=7), hip)) + geom_boxplot() + xlab("") + ggtitle("hip (glyhb>=7 or not)")
+
+```
+
+>```
+>Looking at the boxplots, it appears that the biggest differences between diabetics
+>and nondiabetics occur in the features chol, stab.glu, age, bp.1s, bp.1d, waist, and hip. 
+>```
+
+\newpage
+
+5. **BMI and WHR**
+
+```{r, echo=FALSE, fig.height=2.3, fig.width=3, warning=FALSE, fig.show='hold'}
+ggplot(diab) + geom_histogram(aes(x = bmi), binwidth = 0.8, col = "white") + ggtitle("BMI")
+ggplot(diab) + stat_qq(aes(sample = bmi)) + ggtitle("BMI normal Q-Q plot")
+```
+
+>```
+>The BMI plots look like a gamma distribution because of its long right-hand tail. 
+>```
+
+```{r, echo=FALSE, fig.height=2.3, fig.width=3, warning=FALSE, fig.show='hold'}
+
+ggplot(diab) + geom_histogram(aes(x = whr),binwidth = 0.01, col = "white") + ggtitle("WHR")
+ggplot(diab) + stat_qq(aes(sample = whr)) + ggtitle("WHR normal Q-Q plot")
+```
+
+>```
+>The WHR plots look like a normal distribution because it looks bell-shaped and 
+>the QQ-plot is almost a straight line at 45 degrees. 
+>```
+
+```{r, echo=FALSE, fig.height=2.3, fig.width=3, warning=FALSE, fig.show='hold'}
+
+ggplot(diab, aes(factor(glyhb>=7), bmi)) + geom_boxplot() + xlab("") + ggtitle("BMI boxplot by glyhb>=7 or not")
+ggplot(diab, aes(factor(glyhb>=7), whr)) + geom_boxplot() + xlab("") + ggtitle("WHR boxplot by glyhb>=7 or not")
+
+```
+
+>```
+>Conditional Boxplots for BMI and WHR
+>```
+
+\newpage
+
+6. **Initial Analysis of Related/Unrelated Features**
+
+>From the conditional boxplots, we found that stab.glu shifted the most for 
+>groups of glyhb value>=7 and glyhb<7, which means it is related to the presence 
+>of type II diabetes. Age is the second important factor for the presence of 
+>type II diabetes. Chol, hdl, weight, bp.1s, chol/hdl ratio, waist, hip, BMI, 
+>and WHR are related to the type II diabetes but to a lesser degree. The factors 
+>height and bp.1d do not appear related to the presence of type II diabetes. 
+
+
+# 3   Parametric Inference
+
+1. **Method of Moments to Fit Gamma Distribution to BMI**
+
+```{r, echo=FALSE, results='hide'}
+
+diabetes = diab
+
+BMI = (703 * diabetes$weight / (diabetes$height)^2)
+
+alpha.mom = mean(BMI) ^ 2 / var(BMI)
+beta.mom = mean(BMI) / var(BMI)
+
+alpha.mom.approx = 18
+
+# calculate the fitted values for the fitted MOM distirbution (approximating Gamma(alpha) = 18)
+
+BMI = data.frame(BMI)
+
+x <- seq(1, 60, 0.1) 
+fit.distribution <- data.frame(x = x, f = (beta.mom ^ alpha.mom.approx) * (x ^ (alpha.mom.approx - 1)) * exp(- beta.mom * x) / factorial((alpha.mom.approx - 1)))
+
+
+```
+
+
+```{r, echo=FALSE, results='hide'}
+
+## Calculate confidence intervals for estimated parameters (alpha.mom, beta.mom)
+
+# store the samples in the matrix BMI.npboot
+
+B = 1000
+BMI.npboot <- matrix(NA, ncol = B, nrow = length(BMI[[1]]))
+
+for(i in 1:B){
+  
+  # store the sample in column i
+  BMI.npboot[,i] <- sample(BMI[[1]], replace = TRUE)
+
+}
+
+# Non-parametric bootstrapping for values of alpha, beta.
+# Then going to construct confidence intervals for alpha.mom and beta.mom
+
+#with 1000 samples, alpha.npboot and beta.npboot roughly normal, find confidence intervals for those
+
+### Alpha.mom Confidence Interval
+
+alpha.npboot = apply(BMI.npboot, 2, function(x) mean(x) ^ 2 / var (x))
+alpha.npboot.percentiles = quantile(alpha.npboot, probs = c(0.025, 0.975))
+
+alpha.mean = mean(alpha.npboot)
+alpha.sd = sd(alpha.npboot)
+
+alpha.npboot.CI = c(alpha.mean - alpha.npboot.percentiles[1] * alpha.sd / sqrt(length(alpha.npboot)), alpha.mom, alpha.mean + alpha.npboot.percentiles[2] * alpha.sd / sqrt(length(alpha.npboot)))
+
+names(alpha.npboot.CI) = c("lower bound", "estmated alpha", "upper bound")
+alpha.npboot.CI
+
+
+### Beta.mom Confidence Interval
+
+beta.npboot = apply(BMI.npboot, 2, function(x) mean(x) / var (x))
+beta.npboot.percentiles = quantile(beta.npboot, probs = c(0.025, 0.975))
+
+beta.mean = mean(beta.npboot)
+beta.sd = sd(beta.npboot)
+
+beta.npboot.CI = c(beta.mean - beta.npboot.percentiles[1] * beta.sd / sqrt(length(beta.npboot)),beta.mom, beta.mean + beta.npboot.percentiles[2] * beta.sd / sqrt(length(beta.npboot)))
+
+names(beta.npboot.CI) = c("lower bound", "estimated beta", "upper bound")
+beta.npboot.CI
+
+```
+
+>```
+>95% confidence interval for alpha.mom
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+alpha.npboot.CI
+
+```
+
+>```
+>95% confidence interval for beta.mom
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+beta.npboot.CI
+
+```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+# plot the histogram and the fitted line on top
+ggplot(BMI) +
+geom_histogram(aes(x = BMI, y = ..density..), binwidth = 2, col = "white") +
+geom_line(aes(x = x, y = f), data = fit.distribution, col = "red") + 
+ggtitle("BMI Fitted Density")
+
+
+```
+
+2. **Maximum Likelihood to Fit Gaussian Distribution to WHR**
+
+```{r, echo=FALSE, results='hide'}
+
+WHR = diabetes$waist / diabetes$hip
+
+mu.mle = mean(WHR)
+var.mle = sum((WHR - mu.mle) ^ 2) / length(WHR)
+
+
+WHR = data.frame(WHR)
+
+x <- seq(0.6, 1.15, 0.01) 
+fit.distribution.WHR <- data.frame(x = x, f = exp(-(x - mu.mle)^2 / (2 * var.mle)) / (sqrt(var.mle) * sqrt(2 * pi)) )
+
+
+
+```
+
+
+```{r, echo=FALSE, results='hide'}
+
+### Calculate confidence intervals for estimated parameters (mu.mle, var.mle)
+
+# store the samples in the matrix WHR.npboot
+
+WHR.npboot <- matrix(NA, ncol = B, nrow = length(WHR[[1]]))
+
+for(i in 1:B){
+  
+  # store the sample in column i
+  WHR.npboot[,i] <- sample(WHR[[1]], replace = TRUE)
+
+}
+
+# Non-parametric bootstrapping for values of mu, var
+# Then going to construct confidence intervals for mu.mle, var.mle
+
+#with 1000 samples, mu.npboot and var.npboot roughly normal, find confidence intervals for those
+
+### Mu.mle Confidence Interval
+
+mu.npboot = apply(WHR.npboot, 2, function(x) mean(x))
+mu.npboot.percentiles = quantile(mu.npboot, probs = c(0.025, 0.975))
+
+mu.mean = mean(mu.npboot)
+mu.sd = sd(mu.npboot)
+
+mu.npboot.CI = c(mu.mean - mu.npboot.percentiles[1] * mu.sd / sqrt(length(mu.npboot)), mu.mle, mu.mean + mu.npboot.percentiles[2] * mu.sd / sqrt(length(mu.npboot)))
+
+names(mu.npboot.CI) = c("lower bound", "estimated mu", "upper bound")
+mu.npboot.CI
+
+
+### Var.mle Confidence Interval
+
+var.npboot = apply(WHR.npboot, 2, function(x) var(x))
+var.npboot.percentiles = quantile(var.npboot, probs = c(0.025, 0.975))
+
+var.mean = mean(var.npboot)
+var.sd = sd(var.npboot)
+
+var.npboot.CI = c(var.mean - var.npboot.percentiles[1] * var.sd / sqrt(length(var.npboot)), var.mle, var.mean + var.npboot.percentiles[2] * var.sd / sqrt(length(var.npboot)))
+
+names(var.npboot.CI) = c("lower bound", "estimated var", "upper bound")
+var.npboot.CI
+
+```
+
+>```
+>95% confidence interval for mu.mle
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+mu.npboot.CI
+
+```
+
+>```
+>95% confidence interval for var.mle
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+var.npboot.CI
+
+```
+
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+# plot the histogram and the fitted line on top
+
+ggplot(WHR) +
+geom_histogram(aes(x = WHR, y = ..density..), binwidth = 0.01, col = "white") +
+geom_line(aes(x = x, y = f), data = fit.distribution.WHR, col = "red") + 
+  ggtitle("WHR Fitted Density")
+
+```
+
+
+3. **BMI and WHR for Males and Females, Diabetic and Nondiabetic**
+
+```{r, echo=FALSE, results='hide'}
+### Functions to compute confidence intervals for alpha.mom and beta.mom
+
+# will use normal confidence intervals because many degrees of freedom for t, approx normal
+
+## Calculate confidence intervals for estimated parameters (alpha.mom, beta.mom)
+# Make sure that BMI parameter is a vector and not a data frame
+
+alpha.CI.BMI = function(BMI, alpha.mom, B = 1000){
+  BMI.npboot <- matrix(NA, ncol = B, nrow = length(BMI))
+
+  for(i in 1:B){
+    BMI.npboot[,i] <- sample(BMI, replace = TRUE)
+  }
+
+  alpha.npboot = apply(BMI.npboot, 2, function(x) mean(x) ^ 2 / var (x))
+  alpha.npboot.percentiles = quantile(alpha.npboot, probs = c(0.025, 0.975))
+
+  
+  
+  alpha.mean = mean(alpha.npboot)
+  alpha.sd = sd(alpha.npboot)
+
+  alpha.npboot.CI = c(alpha.mean - alpha.npboot.percentiles[1] * alpha.sd / sqrt(length(alpha.npboot)),
+                      alpha.mom,
+                      alpha.mean + alpha.npboot.percentiles[2] * alpha.sd / sqrt(length(alpha.npboot)))
+
+  names(alpha.npboot.CI) = c("lower bound", "estimated alpha", "upper bound")
+  return(alpha.npboot.CI)
+}
+
+
+beta.CI.BMI = function(BMI, beta.mom, B = 1000){
+  
+  BMI.npboot <- matrix(NA, ncol = B, nrow = length(BMI))
+
+  for(i in 1:B){
+    BMI.npboot[,i] <- sample(BMI, replace = TRUE)
+  }
+  
+  beta.npboot = apply(BMI.npboot, 2, function(x) mean(x) / var (x))
+  beta.npboot.percentiles = quantile(beta.npboot, probs = c(0.025, 0.975))
+
+  beta.mean = mean(beta.npboot)
+  beta.sd = sd(beta.npboot)
+
+  beta.npboot.CI = c(beta.mean - beta.npboot.percentiles[1] * beta.sd / sqrt(length(beta.npboot)),
+                     beta.mom,
+                     beta.mean + beta.npboot.percentiles[2] * beta.sd / sqrt(length(beta.npboot)))
+
+  names(beta.npboot.CI) = c("lower bound", "estimated beta", "upper bound")
+  return(beta.npboot.CI)
+}
+
+# BMI
+
+## Test for males with glyhb >= 7
+male.highGlyhb = diabetes[diabetes$gender == 'male' & diabetes$glyhb >= 7, ] 
+
+
+male.high.BMI = (703 * male.highGlyhb$weight / (male.highGlyhb$height)^2)
+
+male.high.alpha.mom = mean(male.high.BMI) ^ 2 / var(male.high.BMI)
+male.high.beta.mom = mean(male.high.BMI) / var(male.high.BMI)
+
+
+# calculate the fitted values for the fitted MOM distirbution
+
+male.high.BMI = data.frame(male.high.BMI)
+
+x <- seq(15, 60, 0.1) 
+male.high.fit.distr <- data.frame(x = x, f = (male.high.beta.mom ^ male.high.alpha.mom) * (x ^ (male.high.alpha.mom - 1)) * exp(- male.high.beta.mom * x) / factorial((male.high.alpha.mom - 1)))
+
+
+# Calculate confidence intervals for alpha and beta
+
+male.high.alpha.CI = alpha.CI.BMI(male.high.BMI[[1]], male.high.alpha.mom)
+male.high.alpha.CI
+
+male.high.beta.CI = beta.CI.BMI(male.high.BMI[[1]], male.high.beta.mom)
+male.high.beta.CI
+
+
+
+## Test for females with glyhb >= 7
+female.highGlyhb = diabetes[diabetes$gender == 'female' & diabetes$glyhb >= 7, ] 
+
+female.high.BMI = (703 * female.highGlyhb$weight / (female.highGlyhb$height)^2)
+
+female.high.alpha.mom = mean(female.high.BMI) ^ 2 / var(female.high.BMI)
+female.high.beta.mom = mean(female.high.BMI) / var(female.high.BMI)
+
+
+## calculate the fitted values for the fitted MOM distirbution
+
+female.high.BMI = data.frame(female.high.BMI)
+
+x <- seq(15, 60, 0.1) 
+female.high.fit.distr <- data.frame(x = x, f = (female.high.beta.mom ^ female.high.alpha.mom) * (x ^ (female.high.alpha.mom - 1)) * exp(- female.high.beta.mom * x) / factorial((female.high.alpha.mom - 1)))
+
+
+# Calculate confidence intervals for alpha and beta
+
+female.high.alpha.CI = alpha.CI.BMI(female.high.BMI[[1]], female.high.alpha.mom)
+female.high.alpha.CI
+
+female.high.beta.CI = beta.CI.BMI(female.high.BMI[[1]], female.high.beta.mom)
+female.high.beta.CI
+
+
+## Test for males with glyhb < 7
+male.lowGlyhb = diabetes[diabetes$gender == 'male' & diabetes$glyhb < 7, ] 
+
+male.low.BMI = (703 * male.lowGlyhb$weight / (male.lowGlyhb$height)^2)
+
+male.low.alpha.mom = mean(male.low.BMI) ^ 2 / var(male.low.BMI)
+male.low.beta.mom = mean(male.low.BMI) / var(male.low.BMI)
+
+# calculate the fitted values for the fitted MOM distirbution
+
+male.low.BMI = data.frame(male.low.BMI)
+
+x <- seq(15, 50, 0.1) 
+male.low.fit.distr <- data.frame(x = x, f = (male.low.beta.mom ^ male.low.alpha.mom) * (x ^ (male.low.alpha.mom - 1)) * exp(- male.low.beta.mom * x) / factorial((male.low.alpha.mom - 1)))
+
+
+# Calculate confidence intervals for alpha and beta
+
+male.low.alpha.CI = alpha.CI.BMI(male.low.BMI[[1]], male.low.alpha.mom)
+male.low.alpha.CI
+
+male.low.beta.CI = beta.CI.BMI(male.low.BMI[[1]], male.low.beta.mom)
+male.low.beta.CI
+
+## Test for females with glyhb < 7
+female.lowGlyhb = diabetes[diabetes$gender == 'female' & diabetes$glyhb < 7, ] 
+
+female.low.BMI = (703 * female.lowGlyhb$weight / (female.lowGlyhb$height)^2)
+
+female.low.alpha.mom = mean(female.low.BMI) ^ 2 / var(female.low.BMI)
+female.low.beta.mom = mean(female.low.BMI) / var(female.low.BMI)
+
+
+# calculate the fitted values for the fitted MOM distirbution
+
+female.low.BMI = data.frame(female.low.BMI)
+
+x <- seq(15, 60, 0.1) 
+female.low.fit.distr <- data.frame(x = x, f = (female.low.beta.mom ^ female.low.alpha.mom) * (x ^ (female.low.alpha.mom - 1)) * exp(- female.low.beta.mom * x) / factorial((female.low.alpha.mom - 1)))
+
+# Calculate confidence intervals for alpha and beta
+
+female.low.alpha.CI = alpha.CI.BMI(female.low.BMI[[1]], female.low.alpha.mom)
+female.low.alpha.CI
+
+female.low.beta.CI = beta.CI.BMI(female.low.BMI[[1]], female.low.beta.mom)
+female.low.beta.CI
+
+```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+# Graphs of males and females BMI
+# high means they have high glyhb, low means they have low glyhb
+
+ggplot(male.high.BMI) +
+geom_histogram(aes(x = male.high.BMI, y = ..density..), binwidth = 1, col = "white") +
+geom_line(aes(x = x, y = f), data = male.high.fit.distr, col = "red") + 
+  ggtitle("BMI of Diabetic Males")
+
+
+ggplot(female.high.BMI) +
+geom_histogram(aes(x = female.high.BMI, y = ..density..), binwidth = 1, col = "white") +
+geom_line(aes(x = x, y = f), data = female.high.fit.distr, col = "red") +
+  ggtitle("BMI of Diabetic Females")
+
+
+```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+# Graphs of males and females BMI
+# high means they have high glyhb, low means they have low glyhb
+
+ggplot(male.low.BMI) +
+geom_histogram(aes(x = male.low.BMI, y = ..density..), binwidth = 1, col = "white") +
+geom_line(aes(x = x, y = f), data = male.low.fit.distr, col = "red") + 
+  ggtitle("BMI of Nondiabetic Males")
+
+
+ggplot(female.low.BMI) +
+geom_histogram(aes(x = female.low.BMI, y = ..density..), binwidth = 1, col = "white") +
+geom_line(aes(x = x, y = f), data = female.low.fit.distr, col = "red") +
+  ggtitle("BMI of Nondiabetic Females")
+
+```
+
+>```
+>95% confidence interval for alpha.mom of diabetic males
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+male.high.alpha.CI
+
+```
+
+>```
+>95% confidence interval for beta.mom of diabetic males
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+male.high.beta.CI
+
+```
+
+>```
+>95% confidence interval for alpha.mom of diabetic females
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+female.high.alpha.CI
+
+```
+
+>```
+>95% confidence interval for beta.mom of diabetic females
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+female.high.beta.CI
+
+```
+
+>```
+>95% confidence interval for alpha.mom of nondiabetic males
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+male.low.alpha.CI
+
+```
+
+>```
+>95% confidence interval for beta.mom of nondiabetic males
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+male.low.beta.CI
+
+```
+
+>```
+>95% confidence interval for alpha.mom of nondiabetic females
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+female.low.alpha.CI
+
+```
+
+>```
+>95% confidence interval for beta.mom of nondiabetic females
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+female.low.beta.CI
+
+```
+
+
+```{r, echo=FALSE, results='hide'}
+
+### Functions to compute confidence intervals for mu.mle and var.mle
+
+
+## Calculate confidence intervals for estimated parameters (mu.mle, var.mle)
+# Make sure that BMI parameter is a vector and not a data frame
+
+
+### Mu.mle Confidence Interval
+
+mu.CI.WHR = function(WHR, mu.mle, B = 1000){
+  
+  WHR.npboot <- matrix(NA, ncol = B, nrow = length(WHR))
+  
+  for(i in 1:B){
+    WHR.npboot[,i] <- sample(WHR, replace = TRUE)
+  }
+  
+  
+  mu.npboot = apply(WHR.npboot, 2, function(x) mean(x))
+  mu.npboot.percentiles = quantile(mu.npboot, probs = c(0.025, 0.975))
+
+  mu.mean = mean(mu.npboot)
+  mu.sd = sd(mu.npboot)
+
+  mu.npboot.CI = c(mu.mean - mu.npboot.percentiles[1] * mu.sd / sqrt(length(mu.npboot)),
+                   mu.mle,
+                   mu.mean + mu.npboot.percentiles[2] * mu.sd / sqrt(length(mu.npboot)))
+
+  names(mu.npboot.CI) = c("lower bound", "estimated mu", "upper bound")
+  return(mu.npboot.CI)
+
+}
+
+
+
+### Var.mle Confidence Interval
+
+var.CI.WHR = function(WHR, var.mle, B = 1000){
+  
+  WHR.npboot <- matrix(NA, ncol = B, nrow = length(WHR))
+  
+  for(i in 1:B){
+    WHR.npboot[,i] <- sample(WHR, replace = TRUE)
+  }
+  
+  
+  var.npboot = apply(WHR.npboot, 2, function(x) var(x))
+  var.npboot.percentiles = quantile(var.npboot, probs = c(0.025, 0.975))
+
+  var.mean = mean(var.npboot)
+  var.sd = sd(var.npboot)
+
+  var.npboot.CI = c(var.mean - var.npboot.percentiles[1] * var.sd / sqrt(length(var.npboot)), 
+                    var.mle,
+                    var.mean +    var.npboot.percentiles[2] * var.sd / sqrt(length(var.npboot)))
+
+  names(var.npboot.CI) = c("lower bound", "estimated var", "upper bound")
+  return(var.npboot.CI)
+}
+
+# WHR
+
+## Test for males with glyhb >= 7
+male.highGlyhb = diabetes[diabetes$gender == 'male' & diabetes$glyhb >= 7, ] 
+
+male.high.WHR = male.highGlyhb$waist / male.highGlyhb$hip
+
+male.high.mu.mle = mean(male.high.WHR) 
+male.high.var.mle = sum((male.high.WHR - male.high.mu.mle) ^ 2) / length(male.high.WHR)
+
+
+male.high.WHR = data.frame(male.high.WHR)
+
+x <- seq(0.6, 1.15, 0.01) 
+male.high.fit.distr.WHR <- data.frame(x = x, f = exp(-(x - male.high.mu.mle)^2 / (2 * male.high.var.mle)) / (sqrt(male.high.var.mle) * sqrt(2 * pi)) )
+
+# Calculate confidence intervals for alpha and beta
+
+male.high.mu.CI = mu.CI.WHR(male.high.WHR[[1]], male.high.mu.mle)
+male.high.mu.CI
+
+male.high.var.CI = var.CI.WHR(male.high.WHR[[1]], male.high.var.mle)
+male.high.var.CI
+
+
+
+## Test for females with glyhb >= 7
+female.highGlyhb = diabetes[diabetes$gender == 'female' & diabetes$glyhb >= 7, ] 
+
+female.high.WHR = female.highGlyhb$waist / female.highGlyhb$hip
+
+female.high.mu.mle = mean(female.high.WHR) 
+female.high.var.mle = sum((female.high.WHR - female.high.mu.mle) ^ 2) / length(female.high.WHR)
+
+
+female.high.WHR = data.frame(female.high.WHR)
+
+x <- seq(0.6, 1.15, 0.01) 
+female.high.fit.distr.WHR <- data.frame(x = x, f = exp(-(x - female.high.mu.mle)^2 / (2 * female.high.var.mle)) / (sqrt(female.high.var.mle) * sqrt(2 * pi)) )
+
+
+# Calculate confidence intervals for alpha and beta
+
+female.high.mu.CI = mu.CI.WHR(female.high.WHR[[1]], female.high.mu.mle)
+female.high.mu.CI
+
+female.high.var.CI = var.CI.WHR(female.high.WHR[[1]], female.high.var.mle)
+female.high.var.CI
+
+
+
+## Test for males with glyhb < 7
+male.lowGlyhb = diabetes[diabetes$gender == 'male' & diabetes$glyhb < 7, ] 
+
+male.low.WHR = male.lowGlyhb$waist / male.lowGlyhb$hip
+
+male.low.mu.mle = mean(male.low.WHR) 
+male.low.var.mle = sum((male.low.WHR - male.low.mu.mle) ^ 2) / length(male.low.WHR)
+
+
+male.low.WHR = data.frame(male.low.WHR)
+
+x <- seq(0.6, 1.15, 0.01) 
+male.low.fit.distr.WHR <- data.frame(x = x, f = exp(-(x - male.low.mu.mle)^2 / (2 * male.low.var.mle)) / (sqrt(male.low.var.mle) * sqrt(2 * pi)) )
+
+
+# Calculate confidence intervals for alpha and beta
+
+male.low.mu.CI = mu.CI.WHR(male.low.WHR[[1]], male.low.mu.mle)
+male.low.mu.CI
+
+male.low.var.CI = var.CI.WHR(male.low.WHR[[1]], male.low.var.mle)
+male.low.var.CI
+
+
+
+## Test for females with glyhb < 7
+female.lowGlyhb = diabetes[diabetes$gender == 'female' & diabetes$glyhb < 7, ] 
+
+female.low.WHR = female.lowGlyhb$waist / female.lowGlyhb$hip
+
+female.low.mu.mle = mean(female.low.WHR) 
+female.low.var.mle = sum((female.low.WHR - female.low.mu.mle) ^ 2) / length(female.low.WHR)
+
+
+female.low.WHR = data.frame(female.low.WHR)
+
+x <- seq(0.6, 1.15, 0.01) 
+female.low.fit.distr.WHR <- data.frame(x = x, f = exp(-(x - female.low.mu.mle)^2 / (2 * female.low.var.mle)) / (sqrt(female.low.var.mle) * sqrt(2 * pi)) )
+
+# Calculate confidence intervals for alpha and beta
+
+female.low.mu.CI = mu.CI.WHR(female.low.WHR[[1]], female.low.mu.mle)
+female.low.mu.CI
+
+female.low.var.CI = var.CI.WHR(female.low.WHR[[1]], female.low.var.mle)
+female.low.var.CI
+
+```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+# Graphs of males and females WHR
+# high means they have high glyhb, low means they have low glyhb
+
+ggplot(male.high.WHR) +
+geom_histogram(aes(x = male.high.WHR, y = ..density..), binwidth = 0.01, col = "white") +
+geom_line(aes(x = x, y = f), data = male.high.fit.distr.WHR, col = "red") +
+  ggtitle("WHR of Diabetic Males")
+
+ggplot(female.high.WHR) +
+geom_histogram(aes(x = female.high.WHR, y = ..density..), binwidth = 0.01, col = "white") +
+geom_line(aes(x = x, y = f), data = female.high.fit.distr.WHR, col = "red") +
+  ggtitle("WHR of Diabetic Females")
+
+```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+# Graphs of males and females WHR
+# high means they have high glyhb, low means they have low glyhb
+
+ggplot(male.low.WHR) +
+geom_histogram(aes(x = male.low.WHR, y = ..density..), binwidth = 0.01, col = "white") +
+geom_line(aes(x = x, y = f), data = male.low.fit.distr.WHR, col = "red") + 
+  ggtitle("WHR of Nondiabetic Males")
+
+ggplot(female.low.WHR) +
+geom_histogram(aes(x = female.low.WHR, y = ..density..), binwidth = 0.01, col = "white") +
+geom_line(aes(x = x, y = f), data = female.low.fit.distr.WHR, col = "red") +
+  ggtitle("WHR of Nondiabetic Females")
+
+```
+
+
+
+>```
+>95% confidence interval for mu.mle of diabetic males
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+male.high.mu.CI
+
+```
+
+>```
+>95% confidence interval for var.mle of diabetic males
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+male.high.var.CI
+
+```
+
+>```
+>95% confidence interval for mu.mle of diabetic females
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+female.high.mu.CI
+
+```
+
+>```
+>95% confidence interval for var.mle of diabetic females
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+female.high.var.CI
+
+```
+
+>```
+>95% confidence interval for mu.mle of nondiabetic males
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+male.low.mu.CI
+
+```
+
+>```
+>95% confidence interval for var.mle of nondiabetic males
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+male.low.var.CI
+
+```
+
+>```
+>95% confidence interval for mu.mle of nondiabetic females
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+female.low.mu.CI
+
+```
+
+>```
+>95% confidence interval for var.mle of nondiabetic females
+>```
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+female.low.var.CI
+
+```
+
+>We can see that there is a statistically significant difference between males and females
+>and diabetics and nondiabetics. Females generally had higher BMIs than males 
+>but lower WHR than males. Diabetic males had the highest WHRs and the lowest BMIs. 
+>Diabetic males deviated the most from nondiabetic males in WHR. Diabetic females had
+>higher BMIs and WHRs than nondiabetic females. Diabetic males had lower BMIs but 
+>higher WHRs than diabetic females.
+
+# 4   Testing
+
+1. **Male and Female Exposure to Type II Diabetes**
+
+```{r, echo=FALSE, fig.height=2.2, fig.width=3, warning=FALSE, fig.show='hold'}
+
+# use fisher's exact test
+# Figure the entries of the matrix
+t = length(glyhb)  # total obs
+nd = length(which(glyhb<7))  # # of non-diabetes
+d = t - nd  # # of diabetes
+male = length(which(gender=="male"))
+female = t - male
+male.nd = length(which(gender[glyhb<7]=="male"))  # male without diabetes
+female.nd = length(which(gender[glyhb<7]=="female"))  # female without diabetes
+male.d = length(which(gender[glyhb>=7]=="male"))  # male with diabetes
+female.d = length(which(gender[glyhb>=7]=="female"))  # female with diabetes
+
+# make a matrix showing gender & diabete
+gendiab = matrix(c(male.nd, male.d, female.nd, female.d), nrow=2, byrow=T)
+# fisher's
+fisher.test(gendiab)
+
+
+```
+
+>We used Fisher's Exact Test to decide if male and female equally exposed to 
+>type II diabetes. The null hypothesis is that they are equally exposed to 
+>type II diabetes. We found that the p-value is 0.655, which is not statistically
+>significant, so that we cannot reject the null. We conclude that males and females
+>are equally exposed to type II diabetes. 
+
+2. **Favorite Features and Justifications**
+
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+# bootstrap population for testing normality of chol.
+chol.boot1 = replicate(1000, sample(chol[glyhb<7], length(chol[glyhb<7]), T))
+hist(apply(chol.boot1, 2, mean), main = "Hist. of Nondiabetic chol",
+     xlab = "Bootstrapped chol")
+chol.boot2 = replicate(1000, sample(chol[glyhb>=7], length(chol[glyhb>=7]), T))
+hist(apply(chol.boot2, 2, mean), main = "Hist. of Diabetic chol",
+     xlab = "Bootstrapped chol")
+
+```
+
+>The first feature we picked is chol. We make histograms of the bootstrap to test if 
+>chol is normally distributed, and then decide which tests we are going to apply on it.
+
+>The plots appear normally distributed, so we can use the t-test for the parametric 
+>method. The null hypothesis is for the chol of the diabetic group and the non-diabetic
+>group to have equal means.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+
+t.test(chol[glyhb<7], chol[glyhb>=7])
+
+```
+
+>Note the p-value is very small, so we reject the null. We conclude that the diabetic 
+>and the non-diabetic groups have different means. We will justify this again with the 
+>Mann Whitney method.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+wilcox.test(chol[glyhb<7], chol[glyhb>=7], paired=F)
+
+```
+
+>The Mann Whitney test justifies our conclusion from the parametric method because
+>the p-value here is very small as well.
+
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+# bootstrap population for testing normality of age.
+age.boot1 = replicate(1000, sample(age[glyhb<7], length(age[glyhb<7]), T))
+hist(apply(age.boot1, 2, mean), main = "Hist. of Nondiabetic age",
+     xlab = "Bootstrapped age")
+age.boot2 = replicate(1000, sample(age[glyhb>=7], length(age[glyhb>=7]), T))
+hist(apply(age.boot2, 2, mean), main = "Hist. of Diabetic age",
+     xlab = "Bootstrapped age")
+
+```
+
+>The second feature we picked is age. We make histograms of the bootstrap to test if 
+>chol is normally distributed, and then decide which tests we are going to apply on it.
+
+>The plots appear normally distributed, so we can use the t-test for the parametric 
+>method. The null hypothesis is for the age of the diabetic group and the non-diabetic
+>group to have equal means.
+
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+t.test(age[glyhb<7], age[glyhb>=7])
+
+```
+
+>Note the p-value is very small, so we reject the null. We conclude that the diabetic 
+>and the non-diabetic groups have different means. We will justify this again with the 
+>Mann Whitney method.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+wilcox.test(age[glyhb<7], age[glyhb>=7], paired=F)
+```
+
+>The Mann Whitney test justifies our conclusion from the parametric method because
+>the p-value here is very small as well.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+# bootstrap population for testing normality of bp.1s
+bp1s.boot1 = replicate(1000, sample(bp.1s[glyhb<7], length(bp.1s[glyhb<7]), T))
+hist(apply(bp1s.boot1, 2, mean), main = "Hist. of Nondiabetic bp.1s",
+     xlab = "Bootstrapped bp.1s")
+bp1s.boot2 = replicate(1000, sample(bp.1s[glyhb>=7], length(bp.1s[glyhb>=7]), T))
+hist(apply(bp1s.boot2, 2, mean), main = "Hist. of Nondiabetic bp.1s",
+     xlab = "Bootstrapped bp.1s")
+
+```
+
+>The third feature we picked is bp.1s. We make histograms of the bootstrap to test if 
+>bp.1s is normally distributed, and then decide which tests we are going to apply on it.
+
+>The plots appear normally distributed, so we can use the t-test for the parametric 
+>method. The null hypothesis is for the bp.1s of the diabetic group and the non-diabetic
+>group to have equal means.
+
+\newpage
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+t.test(bp.1s[glyhb<7], bp.1s[glyhb>=7])
+
+```
+
+>Note the p-value is very small, so we reject the null. We conclude that the diabetic 
+>and the non-diabetic groups have different means. We will justify this again with the 
+>Mann Whitney method.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+wilcox.test(bp.1s[glyhb<7], bp.1s[glyhb>=7], paired=F)
+```
+
+>The Mann Whitney test justifies our conclusion from the parametric method because
+>the p-value here is very small as well.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+waist.boot1 = replicate(1000, sample(waist[glyhb<7], length(waist[glyhb<7]), T))
+hist(apply(waist.boot1, 2, mean), main = "Hist. of Nondiabetic waist",
+     xlab = "Bootstrapped waist")
+waist.boot2 = replicate(1000, sample(waist[glyhb>=7], length(waist[glyhb>=7]), T))
+hist(apply(waist.boot2, 2, mean), main = "Hist. of Nondiabetic waist",
+     xlab = "Bootstrapped waist")
+
+
+```
+
+>The fourth feature we picked is waist. We make histograms of the bootstrap to test if 
+>waist is normally distributed, and then decide which tests we are going to apply on it.
+
+>The plots appear normally distributed, so we can use the t-test for the parametric 
+>method. The null hypothesis is for the waist of the diabetic group and the non-diabetic
+>group to have equal means.
+
+\newpage
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+t.test(waist[glyhb<7], waist[glyhb>=7])
+
+```
+
+>Note the p-value is very small, so we reject the null. We conclude that the diabetic 
+>and the non-diabetic groups have different means. We will justify this again with the 
+>Mann Whitney method.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+wilcox.test(waist[glyhb<7], waist[glyhb>=7], paired=F)
+```
+
+>The Mann Whitney test justifies our conclusion from the parametric method because
+>the p-value here is very small as well.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+# bootstrap population for testing normality of height
+height.boot1 = replicate(1000, sample(height[glyhb<7], length(height[glyhb<7]), T))
+hist(apply(height.boot1, 2, mean), main = "Hist. of Nondiabetic height",
+     xlab = "Bootstrapped height")
+height.boot2 = replicate(1000, sample(height[glyhb>=7], length(height[glyhb>=7]), T))
+hist(apply(height.boot2, 2, mean), main = "Hist. of Nondiabetic height",
+     xlab = "Bootstrapped height")
+
+```
+
+>The last feature we picked is height. We make histograms of the bootstrap to test if 
+>height is normally distributed, and then decide which tests we are going to apply on it.
+
+>The plots appear normally distributed, so we can use the t-test for the parametric 
+>method. The null hypothesis is for the height of the diabetic group and the non-diabetic
+>group to have equal means.
+
+\newpage
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+t.test(height[glyhb<7], height[glyhb>=7])
+```
+
+>The big p-value tells us that we cannot reject the null, so we conclude that there 
+>is no difference between the two groups' mean. Use Mann Whitney to justify it again.
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+wilcox.test(height[glyhb<7], height[glyhb>=7], paired=F)
+```
+
+>The Mann Whitney test justifies our previous conclusion because the p-value is also very big.
+
+
+3. **BMI and WHR Probabilites for Diabetic vs Nondiabetic Male**
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+# bootstrap population for testing normality of BMI
+bmi.boot1 = replicate(1000, sample(bmi[glyhb<7], length(bmi[glyhb<7]), T))
+hist(apply(bmi.boot1, 2, mean), main = "Hist. of Nondiabetic BMI",
+     xlab = "Bootstrapped BMI")
+bmi.boot2 = replicate(1000, sample(bmi[glyhb>=7], length(bmi[glyhb>=7]), T))
+hist(apply(bmi.boot2, 2, mean), main = "Hist. of Diabetic BMI",
+     xlab = "Bootstrapped BMI")
+
+```
+
+>We first make histograms of the bootstrapped BMIs to test if BMI is normally 
+>distributed, and then decide which tests we are going to apply on it.
+
+>The plots appear normally distributed, so we can use the t-test for the parametric 
+>method. For the t-test, we are testing if male diabetics have a greater mean than 
+>male non-diabetics. The null hypothesis is that they have equal means; the alternative
+>is that the male diabetics group has a greater mean than the male non-diabetics group.
+
+\newpage
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+
+# find male diabetic population
+bmi.dm = bmi[glyhb>=7 & gender=="male"]
+# find male non-diabetic population
+bmi.ndm = bmi[glyhb<7 & gender=="male"]
+t.test(bmi.dm, bmi.ndm, alternative="greater")
+
+```
+
+>The p-value is smaller than 0.05, we conclude that the male diabetics group has 
+>a greater mean than the male non-diabetics group. 
+
+>Now we estimate the probability that a male diabetic has a greater BMI than a male 
+>nondiabetic and compute the 95% confidence interval for the probability.
+
+```{r, echo=FALSE, results='hold'}
+
+xbara.bmi = mean(bmi.dm)
+xbarb.bmi = mean(bmi.ndm)
+xbar.bmi = xbara.bmi - xbarb.bmi
+sa2.bmi = var(bmi.dm)
+sb2.bmi = var(bmi.ndm)
+sp2.bmi = ((length(bmi.dm)-1)*sa2.bmi+(length(bmi.ndm)-1)*sb2.bmi)/((length(bmi.dm)-1)+(length(bmi.ndm)-1))
+sp.bmi = sqrt(sp2.bmi)
+sab.bmi = sp.bmi*sqrt(1/length(bmi.dm)+1/length(bmi.ndm))
+ci.bmi = c(xbar.bmi-qt(.95,length(bmi.dm)+length(bmi.ndm))*sab.bmi, xbar.bmi, xbar.bmi+qt(.95,length(bmi.dm)+length(bmi.ndm))*sab.bmi)
+names(ci.bmi) = c("lower bound", "estmated pi.bmi", "upper bound")
+
+```
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=3.2, warning=FALSE, fig.show='hold'}
+ci.bmi
+
+
+### NEED TO FINISH 4.3 FOR WHR
+```
+
+
+4. **Test for New Male Patient Given WHR**
+
+>To test if a new male patient is diabetic or not given his WHR, we will do a simple hypothesis test. The two simple hypotheses are H0: WHR follows the empirical distribution of diabetic patients vs H1: WHR follows empirical distribution of nondiabetic patients. 
+
+>From Part 4.3, we have already fitted Gaussian densities using maximum likelihood estimators for the WHRs of diabetic males and nondiabetic males. Then we use the likelihood ratio function L(x) = f0(x)/f1(x), where f0 is the empirical distribution for H0 and f1 is the empirical distribution for H1. If f1(x) > f0(x) (i.e., L(x) < 0.5), we conclude that the patient is nondiabetic and vice versa. 
+
+>To obtain the power for this test, we calculate the expected value of c(f1(x)) >= f0(x) under f1.
+
+
+5. **Homogeneous Distribution of Categories for BMI and WHR for Males vs Females**
+
+```{r, echo=FALSE, results ='hide'}
+diab4.5 = diab
+
+# BMI Comparison
+bmi.munder = bmi[bmi<18.5 & diab4.5$gender == "male"]
+bmi.funder = bmi[bmi<18.5 & diab4.5$gender == "female"]
+
+bmi.mhealthy = bmi[bmi>=18.5&bmi<=24.99 & diab4.5$gender == "male"]
+bmi.fhealthy = bmi[bmi>=18.5&bmi<=24.99 & diab4.5$gender == "female"]
+
+bmi.mover = bmi[bmi>=25&bmi<=29.99 & diab4.5$gender == "male"]
+bmi.fover = bmi[bmi>=25&bmi<=29.99 & diab4.5$gender == "female"]
+
+bmi.mlvl1 = bmi[bmi>=30&bmi<=34.99 & diab4.5$gender == "male"]
+bmi.flvl1 = bmi[bmi>=30&bmi<=34.99 & diab4.5$gender == "female"]
+
+bmi.mlvl2 = bmi[bmi>=35&bmi<=39.99 & diab4.5$gender == "male"]
+bmi.flvl2 = bmi[bmi>=35&bmi<=39.99 & diab4.5$gender == "female"]
+
+bmi.mlvl3 = bmi[bmi>40 & diab4.5$gender == "male"]
+bmi.flvl3 = bmi[bmi>40 & diab4.5$gender == "female"]
+
+```
+
+>Please see the Excel document for work on Part 4.5.
+
+>First, we test the BMI categories given in Table 1. The null hypothesis: the male and female population sample has a homogeneous distribution of categories  given in Table 1: BMI Standards.  Conducting a Chi-Square test using a significance level of 0.05, and with a p-value of 25.3523 and 5 degrees of freedom, we obtain a less than 0.5 percent probability that the male and female population sample has a homogeneous distribution of such categories.  Therefore, we reject the null hypothesis.
+
+```{r, echo=FALSE, results ='hide'}
+# WHR Comparison
+
+# WHR males Age 20-29
+
+whr.m20L = whr[whr<0.83 & diab4.5$age>=20 & diab4.5$age<= 29 & diab4.5$gender == "male"]
+whr.m20M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=20 & diab4.5$age<= 29 & diab4.5$gender == "male"]
+whr.m20H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=20 & diab4.5$age<= 29 & diab4.5$gender == "male"]
+whr.m20VH = whr[whr>0.94 & diab4.5$age>=20 & diab4.5$age<= 29 & diab4.5$gender == "male"]
+
+# WHR males Age 30-39
+whr.m30L = whr[whr<0.83 & diab4.5$age>=30 & diab4.5$age<= 39 & diab4.5$gender == "male"]
+whr.m30M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=30 & diab4.5$age<= 39 & diab4.5$gender == "male"]
+whr.m30H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=30 & diab4.5$age<= 39 & diab4.5$gender == "male"]
+whr.m30VH = whr[whr>0.94 & diab4.5$age>=30 & diab4.5$age<= 39 & diab4.5$gender == "male"]
+
+# WHR males Age 40-49
+whr.m40L = whr[whr<0.83 & diab4.5$age>=40 & diab4.5$age<= 49 & diab4.5$gender == "male"]
+whr.m40M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=40 & diab4.5$age<= 49 & diab4.5$gender == "male"]
+whr.m40H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=40 & diab4.5$age<= 49 & diab4.5$gender == "male"]
+whr.m40VH = whr[whr>0.94 & diab4.5$age>=40 & diab4.5$age<= 49 & diab4.5$gender == "male"]
+
+
+# WHR males Age 50-59
+whr.m50L = whr[whr<0.83 & diab4.5$age>=50 & diab4.5$age<= 59 & diab4.5$gender == "male"]
+whr.m50M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=50 & diab4.5$age<= 59 & diab4.5$gender == "male"]
+whr.m50H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=50 & diab4.5$age<= 59 & diab4.5$gender == "male"]
+whr.m50VH = whr[whr>0.94 & diab4.5$age>=50 & diab4.5$age<= 59 & diab4.5$gender == "male"]
+
+# WHR males Age >=60
+whr.m60L = whr[whr<0.83 & diab4.5$age>=60 & diab4.5$gender == "male"]
+whr.m60M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=60 & diab4.5$gender == "male"]
+whr.m60H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=60 & diab4.5$gender == "male"]
+whr.m60VH = whr[whr>0.94 & diab4.5$age>=60 & diab4.5$gender == "male"]
+
+
+####
+
+
+# WHR females Age 20-29
+whr.f20L = whr[whr<0.83 & diab4.5$age>=20 & diab4.5$age<= 29 & diab4.5$gender == "female"]
+whr.f20M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=20 & diab4.5$age<= 29 & diab4.5$gender == "female"]
+whr.f20H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=20 & diab4.5$age<= 29 & diab4.5$gender == "female"]
+whr.f20VH = whr[whr>0.94 & diab4.5$age>=20 & diab4.5$age<= 29 & diab4.5$gender == "female"]
+
+# WHR females Age 30-39
+whr.f30L = whr[whr<0.83 & diab4.5$age>=30 & diab4.5$age<= 39 & diab4.5$gender == "female"]
+whr.f30M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=30 & diab4.5$age<= 39 & diab4.5$gender == "female"]
+whr.f30H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=30 & diab4.5$age<= 39 & diab4.5$gender == "female"]
+whr.f30VH = whr[whr>0.94 & diab4.5$age>=30 & diab4.5$age<= 39 & diab4.5$gender == "female"]
+
+# WHR females Age 40-49
+whr.f40L = whr[whr<0.83 & diab4.5$age>=40 & diab4.5$age<= 49 & diab4.5$gender == "female"]
+whr.f40M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=40 & diab4.5$age<= 49 & diab4.5$gender == "female"]
+whr.f40H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=40 & diab4.5$age<= 49 & diab4.5$gender == "female"]
+whr.f40VH = whr[whr>0.94 & diab4.5$age>=40 & diab4.5$age<= 49 & diab4.5$gender == "female"]
+
+# WHR females Age 50-59
+whr.f50L = whr[whr<0.83 & diab4.5$age>=50 & diab4.5$age<= 59 & diab4.5$gender == "female"]
+whr.f50M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=50 & diab4.5$age<= 59 & diab4.5$gender == "female"]
+whr.f50H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=50 & diab4.5$age<= 59 & diab4.5$gender == "female"]
+whr.f50VH = whr[whr>0.94 & diab4.5$age>=50 & diab4.5$age<= 59 & diab4.5$gender == "female"]
+
+# WHR females Age >=60
+whr.f60L = whr[whr<0.83 & diab4.5$age>=60 & diab4.5$gender == "female"]
+whr.f60M = whr[whr>=0.83 & whr<=0.88 & diab4.5$age>=60 & diab4.5$gender == "female"]
+whr.f60H = whr[whr>=0.89 & whr<=0.94 & diab4.5$age>=60 & diab4.5$gender == "female"]
+whr.f60VH = whr[whr>0.94 & diab4.5$age>=60 & diab4.5$gender == "female"]
+
+
+```
+
+>Next, we test the WHR categories given in Table 2. The null hypothesis: the male and female population sample has a homogeneous distribution of categories given in Table 2:  WHR Standards for Men and Women. Conducting a Chi-Square test using a significance level of 0.05,for each age group of men and women, (ages 20-29, 30-39, 40-49, 50-59, and >=60), we obtain p-values of 0.56, 0.07, 0.003, 0.05, and 0.008, respectively. Therefore, we accept the null hypothesis for age groups 20-29, and 30-39, but reject the null for all other age groups.
+
+6. **BMI and WHR Interactions in Detecting glyhb**
+
+>We used GSI Rebecca's code to generate a data frame that contains standardized 
+>ratio factors. We are going to use an interaction plot to see if the two ratios 
+>(BMI and WHR) interact or not, and then we will apply 2-way ANOVA to test if 
+>the interaction is significant or not (significance level 5%).
+
+```{r, echo=FALSE, results='hide'}
+diabetes <- read.csv("diabetes.csv")
+
+# the last 16 lines are  NA
+diabetes <- diabetes %>% filter(!is.na(id))
+
+# create variables for BMI and WHR
+diabetes <- diabetes %>% mutate(BMI = 703*weight/(height^2))
+diabetes <- diabetes %>% mutate(WHR = waist/hip)
+
+diabetes <- diabetes %>% mutate(BMI.standards = cut(BMI, breaks = c(16,18.5, 25, 30, 35, 40, 60)))
+levels(diabetes$BMI.standards)  <- c("Underweight", "Healthy", "Overweight", "Level 1 Obese", "Level 2 Obese", "Level 3 Obese")
+
+# create a variable for the age interval
+diabetes <- diabetes %>% mutate(age.intervals = cut(age, breaks = c(18, 30, 40, 50, 60, 100)))
+
+# generate categories for males in their 20s
+diab.male.20s <- diabetes %>%
+  filter(age < 30 & age >= 19 & gender == "male") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.83, 0.88, 0.94, 1.2)))
+levels(diab.male.20s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+# generate categories for males in their 30s
+diab.male.30s <- diabetes %>%
+  filter(age < 40 & age >= 30 & gender == "male") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.84, 0.91, 0.96, 1.2)))
+levels(diab.male.30s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+# generate categories for males in their 40s
+diab.male.40s <- diabetes %>%
+  filter(age < 50 & age >= 40 & gender == "male") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.88, 0.95, 1.0, 1.2)))
+levels(diab.male.40s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+
+# generate categories for males in their 50s
+diab.male.50s <- diabetes %>%
+  filter(age < 60 & age >= 50 & gender == "male") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.90, 0.97, 1.02, 1.2)))
+levels(diab.male.50s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+# generate categories for males in their 60s
+diab.male.60s <- diabetes %>%
+  filter(age < 100 & age >= 60 & gender == "male") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.91, 0.98, 1.03, 1.2)))
+levels(diab.male.60s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+
+# generate categories for females in their 20s
+diab.female.20s <- diabetes %>%
+  filter(age < 30 & age >= 19 & gender == "female") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.71, 0.77, 0.82, 1.2)))
+levels(diab.female.20s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+# generate categories for females in their 30s
+diab.female.30s <- diabetes %>%
+  filter(age < 40 & age >= 30 & gender == "female") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.72, 0.78, 0.84, 1.2)))
+levels(diab.female.30s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+# generate categories for females in their 40s
+diab.female.40s <- diabetes %>%
+  filter(age < 50 & age >= 40 & gender == "female") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.73, 0.79, 87, 1.2)))
+levels(diab.female.40s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+
+# generate categories for females in their 50s
+diab.female.50s <- diabetes %>%
+  filter(age < 60 & age >= 50 & gender == "female") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.74, 0.81, 0.88, 1.2)))
+levels(diab.female.50s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+
+# generate categories for females in their 60s
+diab.female.60s <- diabetes %>%
+  filter(age < 100 & age >= 60 & gender == "female") %>%
+  mutate(WHR.standards = cut(WHR, breaks = c(0.6, 0.76, 0.83, 0.9, 1.2)))
+levels(diab.female.60s$WHR.standards) <- c("Low","Moderate","High", "Very High")
+
+# join these dataset
+diabetes2 <- rbind(diab.female.60s, diab.female.50s, diab.female.40s, diab.female.30s, diab.female.20s, diab.male.60s, diab.male.50s, diab.male.40s, diab.male.30s, diab.male.20s)
+# rearrange dataset so that rows are in the same order as the original dataset
+diabetes2 <- diabetes2 %>% arrange(id)
+################    GSI's code end    ################
+######################################################
+
+```
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+interaction.plot(diabetes2$BMI.standards, diabetes2$WHR.standards, diabetes2$glyhb,
+                 main="Interaction Between BMI and WHR", xlab = "BMI levels", ylab = "glyhb",
+                 trace.label = "WHR levels")
+```
+
+>As we see in the interaction plot, the two factors interact. Otherwise, the lines 
+>should be parallel to each other. Now use test by 2-way ANOVA to find the 
+>significance of the interaction.
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+
+BMI.standards = diabetes2$BMI.standards
+WHR.standards = diabetes2$WHR.standards
+
+summary(aov(diabetes2$glyhb ~ BMI.standards*WHR.standards))
+```
+
+>From the ANOVA table, we see that the p-value of the interaction term is greater 
+>than the significance level of 0.05, so we conclude that the interaction term does 
+>not have an effect on the glyhb values.
+
+
+# 5   Regression
+
+1. **Linear Regression on glyhb**
+
+>We first make a correlations table of the features we like.
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+
+# First generate a data frame in R that only contains numerical factors, called ndiab:
+ndiab = subset(diab, select=-c(X,id,location,gender,frame,glyhb))
+ndiab$glyhb = glyhb
+# find correlations as in a matrix
+cor(ndiab)
+
+```
+
+>From the table of correlations, we found that weight, waist, and hip are very 
+>correlated with each other, so we decided to use waist only since it has the 
+>largest correlation with glyhb. We also get rid of time.ppn since it does not 
+>correlate with glyhb that much. 
+
+>Now we do the linear modelling with our remaining features.
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+
+ndiab.lm = lm(glyhb ~ chol + stab.glu + hdl + ratio + age + bp.1s + bp.1d + waist + bmi + whr)
+summary(ndiab.lm)
+
+```
+
+>Using the estimated beta coefficients, we calculate the prediction error rate 
+>of our model. 
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+# the model is:
+chol = diab$chol
+stab = diab$stab.glu
+hdl = diab$hdl
+ratio = diab$ratio
+age = diab$age
+bp.1s = diab$bp.1s
+bp.1d = diab$bp.1d
+waist = diab$waist
+
+y = diab$glyhb
+
+yhat = -0.2638 + 0.0036*chol + 0.0255*stab.glu + 0.005*hdl + 0.1583*ratio + 0.0124*age + 0.0042*bp.1s - 0.0046*bp.1d + 0.0454*waist - 0.0205*bmi - 0.5897*whr
+
+# real diabetic patiants
+real.diab = as.numeric(y>=7)
+# our estimated diabatic patiants
+esti.diab = as.numeric(yhat>=7)
+# how many of them are different:
+diff = length(which(real.diab != esti.diab))
+# prediction error rate:
+err = diff/length(glyhb)
+names(err) = "Prediction Error Rate"
+
+err
+```
+
+2. **False Positives Rate and False Negatives Rate**
+
+>We compute the false positives rate and the false negatives rate for threshhold lambda = 7.
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+
+# the real and estimated non diabetic populations
+real.nondiab = as.numeric(y<7)
+esti.nondiab = as.numeric(yhat<7)
+# find how many non diabete were estimated as diabete
+falpos = length(which(real.nondiab==1 & esti.nondiab==0))
+# the pottion of diabete given by non-diabete
+falpos.rate = falpos / length(which(real.nondiab==1)) 
+names(falpos.rate) = "False Positive Rate"
+
+falpos.rate
+
+# use the real and estimated diabete populations found before
+# find how many diabetes were estimated as non-diabetes
+falneg = length(which(real.diab==1 & esti.diab==0))
+# the pottion of non-diabete given by diabete
+falneg.rate = falneg / length(which(real.diab==1)) 
+names(falneg.rate) = "False Negative Rate"
+
+falneg.rate
+
+```
+
+>To meet the new specification of having a false negatives rate under 10%,
+>we need to adjust our lambda. Playing around with the numbers, we found that
+>setting lambda to 4.12 met the requirement. We now calculate the new false
+>positives rate under this new lambda. 
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+
+newreal.diab = as.numeric(y>=4.12)
+newesti.diab = as.numeric(yhat>=4.12)
+newfalneg = length(which(newreal.diab==1 & newesti.diab==0))
+newfalneg.rate = newfalneg / length(which(newreal.diab==1))
+names(newfalneg.rate) = "New False Negatives Rate"
+
+# when lambda = 4.12, how about the false positive rate:
+newreal.nondiab = as.numeric(y<4.12)
+newesti.nondiab = as.numeric(yhat<4.12)
+newfalpos = length(which(newreal.nondiab==1 & newesti.nondiab==0))
+newfalpos.rate = newfalpos / length(which(newreal.nondiab==1)) 
+names(newfalpos.rate) = "New False Positives Rate"
+
+newfalneg.rate
+newfalpos.rate
+```
+
+>What we see is that the new false positives rate is much higher than the original
+>false positives rate, so there appears to be a trade-off between the two rates.
+
+3. **Features with the Largest Influence**
+
+>Before applying the linear model, we standardized the data, and we used all the 
+>numeric factors. Then we called the lm function on our features.
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+# Appply lm function to all those features, and standardize them by /sd()
+sd.diab = lapply(ndiab, function(x) x/sd(x))
+diabsd.lm = lm(glyhb ~ chol + stab.glu +
+                 hdl + ratio + age + height +
+                 weight + bp.1s + bp.1d +
+                 waist + hip + time.ppn + bmi +
+                 whr, data=sd.diab)
+summary(diabsd.lm)
+
+```
+
+>stab.glu, hip, and waist have the biggest influence since they have the largest 
+beta coefficients. hdl, bp.1s, and bp.1d have very large  p-values, so we cannot 
+>reject the null hypothesis that beta(dhl)=0, beta(bp.1s)=0, and beta(bp.1d)=0. 
+>We conclude that these three features have no predictive value at 5% significance level.
+
+
+4. **Improving Linear Model with Interaction**
+
+>We did not conclude that BMI and WHR interact in Part 5.2 However, if they did
+>interact, we would include an interaction term in our model to make it a more
+>accurate model.
+
+\newpage
+
+5. **Plot Residuals**
+
+```{r, echo=FALSE, fig.height=3, fig.width=5.5, warning=FALSE, fig.show='hold'}
+resid = y - yhat
+
+resid.df = data.frame(resid, yhat)
+ggplot(resid.df) + geom_point(aes(x = yhat, y = resid)) + 
+  geom_hline(aes(yintercept = 0), col = "red") + ggtitle("Residuals Plot")
+
+```
+
+>We plot the residuals for our linear model of glyhb since it already includes
+>stab.glu, BMI, and WHR. We cannot make out any discernable patterns in our 
+>residuals plot and they seem about evenly distributed about y = 0, so we could
+>not come up with a transformation to stabilize the variance of our residuals.
+
+6. **Logistic Regression**
+
+```{r, echo=FALSE, fig.height=3, fig.width=5.5, warning=FALSE, fig.show='hold'}
+
+# Create a vector that indecate if patient is diabetic or not
+glyb_bin <- factor(as.numeric(glyhb>=7))
+# apply glm to get a model
+mylogit <- glm(glyb_bin ~ chol + stab.glu + hdl + ratio + age + bp.1s + bp.1d + waist + bmi + whr, data = diab, family = "binomial")
+summary(mylogit)
+# Use the original data set to be test if patients are diabetic or not
+newdata = data.frame(chol,stab.glu,hdl,ratio,age,bp.1s,bp.1d,waist,bmi,whr)
+# predict every patient by using the features, if the probability >0.5
+# means that the model predicts the patient is diabetic
+pre = predict(mylogit, newdata, type="response")
+# look how many are predicted as diabetic
+#length(which(pre>.5))
+
+
+real.nondiab = as.numeric(y<7)
+lesti.nondiab = as.numeric(pre<0.5)
+
+# find how many non diabete were estimated as diabete
+falpos.log = length(which(real.nondiab==1 & lesti.nondiab==0))
+# the pottion of diabete given by non-diabete
+falpos.rate.log = falpos.log / length(which(real.nondiab==1))
+names(falpos.rate.log) = "False Positives Rate"
+
+# use the real and estimated diabete populations found before
+# find how many diabetes were estimated as non-diabetes
+lesti.diab = as.numeric(pre>=0.5)
+falneg.log = length(which(real.diab==1 & lesti.diab==0))
+# the pottion of non-diabete given by diabete
+falneg.rate.log = falneg.log / length(which(real.diab==1))
+names(falneg.rate.log) = "False Negatives Rate"
+
+# how many of them are different:
+diff.log = length(which(real.diab != lesti.diab))
+# prediction error rate:
+err.log = diff.log/length(glyhb)
+names(err.log) = "Prediction Error Rate"
+
+err.log
+falpos.rate.log
+falneg.rate.log
+
+```
+
+>The prediction error rate for logistic regression is slightly higher than that of linear regression. The false positives rate for logistic regression is lower than that of linear regression, but it also has a higher false negatives rate.. We make histograms of the bootstrap to test if 
+
+7. **Test Predictors on Test Data**
+
+```{r, echo=FALSE, results='hide'}
+diab.test = read.csv("diabetes_test.csv")
+chol.test = diab.test$chol
+stab.test = diab.test$stab.glu
+hdl.test = diab.test$hdl
+ratio.test = diab.test$ratio
+age.test = diab.test$age
+bp.1s.test = diab.test$bp.1s
+bp.1d.test = diab.test$bp.1d
+waist.test = diab.test$waist
+glyhb.test = diab.test$glyhb
+
+bmi.test = round(703*(diab.test$weight/diab.test$height**2),2)
+whr.test = round(diab.test$waist / diab.test$hip, 2)
+
+yhat.test = -0.2638 + 0.0036*chol.test + 0.0255*stab.test + 0.005*hdl.test + 0.1583*ratio.test + 0.0124*age.test + 0.0042*bp.1s.test - 0.0046*bp.1d.test + 0.0454*waist.test - 0.0205*bmi.test - 0.5897*whr.test
+
+fit.test.df <- data.frame(fit = yhat.test, obs = glyhb.test) 
+
+```
+
+
+```{r, echo=FALSE, fig.height=3, fig.width=5.5, warning=FALSE, fig.show='hold'}
+
+ggplot(fit.test.df) + geom_point(aes(x = fit, y = obs)) + 
+  geom_abline(aes(xintercept = 0, slope = 1), col = "red") +
+  ggtitle("Test Data vs Linear Regression Model")
+
+```
+
+
+
+```{r, echo=FALSE, fig.height=3.5, fig.width=8, warning=FALSE, fig.show='hold'}
+y.test = diab.test$glyhb
+real.diab.test = as.numeric(y.test>=7)
+real.nondiab.test = as.numeric(y.test<7)
+                               
+esti.nondiab.test = as.numeric(yhat.test<7)
+esti.diab.test = as.numeric(yhat.test>=7)
+
+# how many of them are different:
+diff.test = length(which(real.diab.test != esti.diab.test))
+# prediction error rate:
+err.test = diff.test/length(y.test)
+names(err.test) = "Prediction Error Rate"
+
+err.test
+
+# find how many non diabete were estimated as diabete
+falpos.test = length(which(real.nondiab.test==1 & esti.nondiab.test==0))
+# the pottion of diabete given by non-diabete
+falpos.rate.test = falpos.test / length(which(real.nondiab.test==1)) 
+names(falpos.rate.test) = "False Positive Rate"
+
+falpos.rate.test
+
+# use the real and estimated diabete populations found before
+# find how many diabetes were estimated as non-diabetes
+falneg.test = length(which(real.diab.test==1 & esti.diab.test==0))
+# the pottion of non-diabete given by diabete
+falneg.rate.test = falneg.test / length(which(real.diab.test==1)) 
+names(falneg.rate.test) = "False Negative Rate"
+
+falneg.rate.test
+
+```
+
+
+```{r, echo=FALSE, results='hide'}
+
+# Use the original data set to be test if patients are diabetic or not
+newdata.log = data.frame(chol.test,stab.test,hdl.test,ratio.test,age.test,bp.1s.test,bp.1d.test,waist.test,bmi.test,whr.test)
+colnames(newdata.log) = c("chol", "stab.glu", "hdl", "ratio", "age", 
+                          "bp.1s", "bp.1d", "waist", "bmi", "whr")
+# predict every patient by using the features, if the probability >0.5
+# means that the model predicts the patient is diabetic
+pre.log = predict(mylogit, newdata.log, type="response")
+
+fit.test.df.log <- data.frame(prob = pre.log, obs = glyhb.test) 
+
+```
+
+
+```{r, echo=FALSE, fig.height=3, fig.width=5.5, warning=FALSE, fig.show='hold'}
+
+ggplot(fit.test.df.log) + geom_point(aes(x = obs, y = prob)) + 
+  ggtitle("Logistic Regression Probabilities vs Test Data")
+
+```
+
+```{r, echo=FALSE, fig.height=3, fig.width=5.5, warning=FALSE, fig.show='hold'}
+
+y.test = diab.test$glyhb
+real.diab.test = as.numeric(y.test>=7)
+real.nondiab.test = as.numeric(y.test<7)
+lesti.nondiab.test = as.numeric(pre.log<0.5)
+
+# find how many non diabete were estimated as diabete
+falpos.log.test = length(which(real.nondiab.test==1 & lesti.nondiab.test==0))
+# the pottion of diabete given by non-diabete
+falpos.rate.log.test = falpos.log.test / length(which(real.nondiab.test==1))
+names(falpos.rate.log.test) = "False Positives Rate"
+
+# use the real and estimated diabete populations found before
+# find how many diabetes were estimated as non-diabetes
+lesti.diab.test = as.numeric(pre.log>=0.5)
+falneg.log.test = length(which(real.diab.test==1 & lesti.diab.test==0))
+# the pottion of non-diabete given by diabete
+falneg.rate.log.test = falneg.log.test / length(which(real.diab.test==1))
+names(falneg.rate.log.test) = "False Negatives Rate"
+
+# how many of them are different:
+diff.log.test = length(which(real.diab.test != lesti.diab.test))
+# prediction error rate:
+err.log.test = diff.log.test/length(y.test)
+names(err.log.test) = "Prediction Error Rate"
+
+err.log.test
+falpos.rate.log.test
+falneg.rate.log.test
+
+```
+
+>For both linear regression and logistic regression models, we obtained about similar prediction rates as in the training set. Because there are only four diabetics and 12 nondiabetics in our test set, our false negatives rate is always in increments of 25% and our false positives rate is in increments of 8.33%. We predicted the same results with both models. We got the predictions we did (0 false positives, 1 false negative) because we were more conservative about our false positives rate, but the tradeoff for that is a higher false negatives rate. This is reflected in our results. 
